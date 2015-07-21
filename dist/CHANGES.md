@@ -1,5 +1,39 @@
 # Changelog
 
+## v1.6 - 2015-06-30
+
+  * Breaking changes
+    * The layer is now passed to the conversion methods of `ol.FeatureConverter`.
+    * The feature is now passed to the conversion methods of `ol.FeatureConverter`.
+    * The `olcs.core.olVectorLayerToCesium()` function now takes a `scene`
+      parameter. The `olcs.core.OlLayerPrimitive` constructor now takes a
+      `scene` parameter.
+    * Core static functions for converting from OL3 features to Cesium primitives
+      have been moved into a class designed for inheritance.
+      The `olcs.FeatureConverter` may be extended and passed as a parameter of
+      the `olcs.VectorSynchronizer` constructor. See the synchronizer function 
+      parameter of the `olcs.OLCesium` constructor. Subclassing requires that
+      the subclass and the library code be compiled together.
+      One way of migrating existing code is to define a global variable:
+      `app.converter = new olcs.FeatureConverter({scene: scene});` and call
+      the methods through it: `app.converter.olLineStringGeometryToCesium()`.
+  * Set reference to the OpenLayers feature and layer to all created Cesium
+    primitives.
+  * Compiled code may override the new `olcs.FeatureConverter.csAddBillboard`
+    method in order to manipulate the option before the Cesium billboard is
+    actually created.
+  * The layer is now stored together with the feature in the Cesium counterpart.
+    They may be retrieved using `pickedCesiumPrimitive.olLayer` and
+    `pickedCesiumPrimitive.olFeature`.
+  * Position point geometries on terrain.
+    With 2D coordinates, use `pointFeature.getGeometry().set('altitudeMode', 'clampToGround')`.
+    With 3D relative coordinates, use `pointFeature.getGeometry().set('altitudeMode', 'relativeToGround')`.
+  * Port to Cesium 1.10.
+
+## v1.5 - 2015-05-29
+
+  * Port to Cesium 1.9 and Ol 3.5.0
+
 ## v1.4 - 2015-04-30
 
   * Port to Cesium 1.8 and Ol 3.4.0
