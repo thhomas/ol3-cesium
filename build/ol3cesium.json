@@ -1,61 +1,47 @@
 {
   "exports": ["*"],
-  "src": ["src/**/*.js"],
-  "ignoreRequires": "^ol\\.",
+  "src": [
+    "src/**/*.js",
+    "ol3/src/**/*.js",
+    "ol3/build/ol.ext/*.js"
+  ],
   "compile": {
     "externs": [
-      "ol3/build/ol-externs.js",
-      "ol3/externs/esrijson.js",
       "externs/olcsx.js",
+      "ol3/externs/oli.js",
+      "ol3/externs/olx.js",
+      "ol3/externs/proj4js.js",
+      "ol3/externs/tilejson.js",
+      "ol3/externs/topojson.js",
+      "ol3/externs/esrijson.js",
+      "ol3/externs/geojson.js",
+      "ol3/externs/bingmaps.js",
+      "ol3/externs/closure-compiler.js",
       "Cesium.externs.js"
     ],
     "define": [
       "goog.array.ASSUME_NATIVE_FUNCTIONS=true",
-      "goog.DEBUG=true"
+      "goog.DEBUG=false"
     ],
     "js": [
     ],
     "jscomp_error": [
-      "accessControls",
-      "ambiguousFunctionDecl",
-      "checkDebuggerStatement",
-      "checkEventfulObjectDisposal",
-      "checkProvides",
-      "checkRegExp",
-      "checkStructDictInheritance",
-      "checkVars",
-      "checkTypes",
-      "const",
-      "constantProperty",
-      "deprecated",
-      "duplicate",
-      "duplicateMessage",
-      "es3",
-      "externsValidation",
-      "fileoverviewTags",
-      "globalThis",
-      "internetExplorerChecks",
-      "invalidCasts",
-      "misplacedTypeAnnotation",
-      "missingProperties",
-      "nonStandardJsDocs",
-      "strictModuleDepCheck",
-      "suspiciousCode",
-      "typeInvalidation",
-      "tweakValidation",
-      "undefinedNames",
-      "undefinedVars",
-      "unknownDefines",
-      "uselessCode",
-      "violatedModuleDep",
-      "visibility"
+      "*"
+    ],
+    "jscomp_off": [
+      "useOfGoogBase",
+      "unnecessaryCasts",
+      "lintChecks"
     ],
     "extra_annotation_name": [
       "api", "observable"
     ],
     "compilation_level": "ADVANCED_OPTIMIZATIONS",
+    "language_in": "ECMASCRIPT5_STRICT",
+    "language_out": "ECMASCRIPT5_STRICT",
     "warning_level": "VERBOSE",
-    "output_wrapper": "(function(){%output%})();",
+    "generate_exports": true,
+    "output_wrapper": "(function(){%output%}).call(window);",
     "use_types_for_optimization": true,
     "create_source_map": "dist/ol3cesium.js.map",
     "source_map_format": "V3"

@@ -18,7 +18,7 @@ Contributor License Agreement](https://raw.github.com/openlayers/cla/master/ccla
 making your contribution as an individual, you can submit a digital [Individual
 Contributor License Agreement](https://docs.google.com/spreadsheet/viewform?formkey=dGNNVUJEMXF2dERTU0FXM3JjNVBQblE6MQ).
 
-i## Setting up development environment
+## Setting up development environment
 
 You will obviously start by
 [forking](https://github.com/openlayers/ol3-cesium/fork) the ol3-cesium repository.
@@ -40,6 +40,11 @@ where `<target>` is the name of the target you want to execute. For example:
 
     $ make dist
 
+## Compliler version
+
+The version of the compiler may be changed by creating a file closure-util.json
+at the root of the project. See [available options](https://github.com/openlayers/closure-util/blob/master/default-config.json)
+and [available compilers](https://github.com/google/closure-compiler/wiki/Binary-Downloads).
 
 ## Pull request guidelines
 

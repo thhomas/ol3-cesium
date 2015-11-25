@@ -2,6 +2,16 @@ var iconFeature = new ol.Feature({
   geometry: new ol.geom.Point([700000, 200000, 100000]),
 });
 
+var textFeature = new ol.Feature({
+  geometry: new ol.geom.Point([1000000, 3000000, 50000]),
+});
+
+var cervinFeature = new ol.Feature({
+  geometry: new ol.geom.Point([852541, 5776649])
+});
+cervinFeature.getGeometry().set('altitudeMode', 'clampToGround');
+
+
 var iconStyle = new ol.style.Style({
   image: new ol.style.Icon(/** @type {olx.style.IconOptions} */ ({
     anchor: [0.5, 46],
@@ -10,21 +20,40 @@ var iconStyle = new ol.style.Style({
     opacity: 0.75,
     src: 'data/icon.png'
   })),
-    text: new ol.style.Text({
-      text: 'Some text',
-      textAlign: 'center',
-      textBaseline: 'middle',
-      stroke: new ol.style.Stroke({
-        color: 'magenta',
-        width: 3
-      }),
-      fill: new ol.style.Fill({
-        color: 'rgba(0, 0, 155, 0.3)'
-      })
-    })
+  text: new ol.style.Text({
+     text: 'Some text',
+     textAlign: 'center',
+     textBaseline: 'middle',
+     stroke: new ol.style.Stroke({
+       color: 'magenta',
+       width: 3
+     }),
+     fill: new ol.style.Fill({
+       color: 'rgba(0, 0, 155, 0.3)'
+     })
+   })
+});
+
+var textStyle = new ol.style.Style({
+  text: new ol.style.Text({
+     text: 'Only text',
+     textAlign: 'center',
+     textBaseline: 'middle',
+     stroke: new ol.style.Stroke({
+       color: 'red',
+       width: 3
+     }),
+     fill: new ol.style.Fill({
+       color: 'rgba(0, 0, 155, 0.3)'
+     })
+   })
 });
 
 iconFeature.setStyle(iconStyle);
+
+textFeature.setStyle(textStyle);
+
+cervinFeature.setStyle(iconStyle);
 
 
 var image = new ol.style.Circle({
@@ -123,13 +152,14 @@ var vectorLayer = new ol.layer.Vector({
   style: styleFunction
 });
 
-
 var vectorSource2 = new ol.source.Vector({
-  features: [iconFeature]
+  features: [iconFeature, textFeature, cervinFeature]
 });
-
-var vectorLayer2 = new ol.layer.Vector({
+var imageVectorSource = new ol.source.ImageVector({
   source: vectorSource2
+});
+var vectorLayer2 = new ol.layer.Image({
+  source: imageVectorSource
 });
 
 var dragAndDropInteraction = new ol.interaction.DragAndDrop({
@@ -141,7 +171,6 @@ var dragAndDropInteraction = new ol.interaction.DragAndDrop({
     ol.format.TopoJSON
   ]
 });
-
 
 
 var map = new ol.Map({
@@ -186,7 +215,7 @@ dragAndDropInteraction.on('addfeatures', function(event) {
 var ol3d = new olcs.OLCesium({map: map, target: 'map3d'});
 var scene = ol3d.getCesiumScene();
 var terrainProvider = new Cesium.CesiumTerrainProvider({
-  url: '//cesiumjs.org/stk-terrain/tilesets/world/tiles'
+  url: '//assets.agi.com/stk-terrain/world'
 });
 scene.terrainProvider = terrainProvider;
 ol3d.setEnabled(true);
@@ -212,8 +241,8 @@ function addOrRemoveOneVectorLayer() {
 }
 
 function addOrRemoveOneFeature() {
-  var count = vectorSource2.getFeatures().length;
-  if (count === 0) {
+  var found = vectorSource2.getFeatures().indexOf(iconFeature);
+  if (found === -1) {
     vectorSource2.addFeature(iconFeature);
   } else {
     vectorSource2.removeFeature(iconFeature);
@@ -234,3 +263,18 @@ function toggleStyle() {
   theCircle.setStyle(oldStyle);
   oldStyle = swap;
 }
+
+function toggleClampToGround() {
+  var altitudeMode;
+  if (!vectorLayer.get('altitudeMode')) {
+    altitudeMode = 'clampToGround';
+  }
+  vectorLayer.set('altitudeMode', altitudeMode);
+  vectorLayer2.set('altitudeMode', altitudeMode);
+  map.removeLayer(vectorLayer);
+  map.removeLayer(vectorLayer2);
+  map.addLayer(vectorLayer);
+  map.addLayer(vectorLayer2);
+}
+
+ol3d.enableAutoRenderLoop();

@@ -1,5 +1,98 @@
 # Changelog
 
+## v1.10
+
+* Breaking changes
+  * OL3-Cesium is now compiled together with OL3. A custom closure compiler
+    build is no more required.
+
+* Changes
+  * Automatically use device pixel ratio (the right way) to configure the
+    Webgl 3D globe. See https://github.com/AnalyticalGraphicsInc/cesium/pull/3233.
+
+## v1.9 - 2015-10-22
+
+* Breaking changes
+  * Port to OL 3.10.1, remove saturation, gamma and hue functions.
+  * Change `olcs.AbstractSynchronizer.prototype.createSingleCounterpart` to
+    return an array of counterparts instead of a unique object. This allows
+    one OL3 layer to be transformed in several Cesium layers.
+  * Rename `olcs.AbstractSynchronizer.prototype.createSingleCounterpart` to
+    `olcs.AbstractSynchronizer.prototype.createSingleLayerCounterparts`.
+  * Rename `olcs.RasterSynchronizer.prototype.convertLayerToCesiumImagery` to
+    `olcs.RasterSynchronizer.prototype.convertLayerToCesiumImageries`.
+
+* Changes
+  * Add `olcs.OLCesium.setResolutionScale` to allow improving performance at
+    the cost of quality.
+  * Automatically use device pixel ratio to configure the Webgl 3D globe.
+  * Add the experimental method `olcs.OLCesium.enableAutoRenderLoop` to stop
+    rendering the globe when idle. This is based on work from Kevin Ring.
+  * Port to Cesium 1.14.
+  * The `olcs.AbstractSynchronizer` now tries to synchronize the layer groups.
+    Only if null is returned will it synchronize each of its children. This
+    allows more synchronization strategies in user applications.
+
+## v1.8 - 2015-09-10
+
+* Breaking changes
+  * Rename `olcs.core.OlLayerPrimitive` to `olcs.core.VectorLayerCounterpart`
+    and stop inheriting from `Cesium.PrimitiveCollection`. The underlying
+    primitive collection may be retrieved with the `getRootPrimitive()` method.
+
+* Changes
+  * Port to Cesium 1.13 and OL 3.9.0.
+  * Allow blocking Cesium rendering to save resources using
+    `olcs.OLCesium#setBlockCesiumRendering(true)`.
+  * The `build/generate-info.js` tool now follows symlinks to properly
+    generate exports.
+  * `olcs.RasterSynchronizer.prototype.convertLayerToCesiumImagery` may be
+    overriden. As usual, subclassing requires that the subclass and the
+    library code be compiled together by Closure. This change notably allows
+    application code to handle projections not supported by Cesium.
+  * Allow application developers to easily compile plugin code together with
+    the library by putting their files in the src/plugins directory. See
+    src/plugins/README.md for details and instructions.
+  * Allow lazy loading of the Cesium script (experimental feature).
+
+## v1.7 - 2015-08-07
+
+  * Port to Cesium 1.12 and Ol 3.8.1
+
+## v1.6 - 2015-06-30
+
+  * Breaking changes
+    * The layer is now passed to the conversion methods of `ol.FeatureConverter`.
+    * The feature is now passed to the conversion methods of `ol.FeatureConverter`.
+    * The `olcs.core.olVectorLayerToCesium()` function now takes a `scene`
+      parameter. The `olcs.core.OlLayerPrimitive` constructor now takes a
+      `scene` parameter.
+    * Core static functions for converting from OL3 features to Cesium primitives
+      have been moved into a class designed for inheritance.
+      The `olcs.FeatureConverter` may be extended and passed as a parameter of
+      the `olcs.VectorSynchronizer` constructor. See the synchronizer function 
+      parameter of the `olcs.OLCesium` constructor. Subclassing requires that
+      the subclass and the library code be compiled together.
+      One way of migrating existing code is to define a global variable:
+      `app.converter = new olcs.FeatureConverter({scene: scene});` and call
+      the methods through it: `app.converter.olLineStringGeometryToCesium()`.
+  * Set reference to the OpenLayers feature and layer to all created Cesium
+    primitives.
+  * Compiled code may override the new `olcs.FeatureConverter.csAddBillboard`
+    method in order to manipulate the option before the Cesium billboard is
+    actually created.
+  * The layer is now stored together with the feature in the Cesium counterpart.
+    They may be retrieved using `pickedCesiumPrimitive.olLayer` and
+    `pickedCesiumPrimitive.olFeature`.
+  * Position point geometries on terrain.
+    With 2D coordinates, use `pointFeature.getGeometry().set('altitudeMode', 'clampToGround')`.
+    With 3D relative coordinates, use `pointFeature.getGeometry().set('altitudeMode', 'relativeToGround')`.
+  * Port to Cesium 1.10.
+
+## v1.5 - 2015-05-29
+
+  * Port to Cesium 1.9 and Ol 3.5.0
+
 ## v1.4 - 2015-04-30
 
   * Port to Cesium 1.8 and Ol 3.4.0

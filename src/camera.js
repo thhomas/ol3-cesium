@@ -1,6 +1,7 @@
 goog.provide('olcs.Camera');
 
 goog.require('goog.events');
+goog.require('ol.Observable');
 goog.require('ol.proj');
 goog.require('olcs.core');
 
@@ -13,6 +14,7 @@ goog.require('olcs.core');
  * @param {!ol.Map} map
  * @constructor
  * @api
+ * @struct
  */
 olcs.Camera = function(scene, map) {
   /**
@@ -46,16 +48,16 @@ olcs.Camera = function(scene, map) {
   this.viewListenKey_ = null;
 
   /**
-   * @type {?ol.TransformFunction}
+   * @type {!ol.TransformFunction}
    * @private
    */
-  this.toLonLat_ = null;
+  this.toLonLat_ = olcs.Camera.identityProjection;
 
   /**
-   * @type {?ol.TransformFunction}
+   * @type {!ol.TransformFunction}
    * @private
    */
-  this.fromLonLat_ = null;
+  this.fromLonLat_ = olcs.Camera.identityProjection;
 
   /**
    * 0 -- topdown, PI/2 -- the horizon
@@ -91,26 +93,47 @@ olcs.Camera = function(scene, map) {
 
 
 /**
+ * @param {Array.<number>} input Input coordinate array.
+ * @param {Array.<number>=} opt_output Output array of coordinate values.
+ * @param {number=} opt_dimension Dimension.
+ * @return {Array.<number>} Input coordinate array (same array as input).
+ */
+olcs.Camera.identityProjection = function(input, opt_output, opt_dimension) {
+  var dim = opt_dimension || input.length;
+  if (opt_output) {
+    for (var i = 0; i < dim; ++i) {
+      opt_output[i] = input[i];
+    }
+  }
+  return input;
+};
+
+
+/**
  * @param {?ol.View} view New view to use.
  * @private
  */
 olcs.Camera.prototype.setView_ = function(view) {
   if (!goog.isNull(this.view_)) {
-    this.view_.unByKey(this.viewListenKey_);
+    ol.Observable.unByKey(this.viewListenKey_);
     this.viewListenKey_ = null;
   }
 
   this.view_ = view;
   if (!goog.isNull(view)) {
-    this.toLonLat_ = ol.proj.getTransform(view.getProjection(), 'EPSG:4326');
-    this.fromLonLat_ = ol.proj.getTransform('EPSG:4326', view.getProjection());
+    var toLonLat = ol.proj.getTransform(view.getProjection(), 'EPSG:4326');
+    var fromLonLat = ol.proj.getTransform('EPSG:4326', view.getProjection());
+    goog.asserts.assert(toLonLat && fromLonLat);
+
+    this.toLonLat_ = toLonLat;
+    this.fromLonLat_ = fromLonLat;
 
     this.viewListenKey_ = view.on('propertychange',
                                   this.handleViewEvent_, this);
     this.readFromView();
   } else {
-    this.toLonLat_ = null;
-    this.fromLonLat_ = null;
+    this.toLonLat_ = olcs.Camera.identityProjection;
+    this.fromLonLat_ = olcs.Camera.identityProjection;
   }
 };
 
@@ -325,10 +348,17 @@ olcs.Camera.prototype.updateCamera_ = function() {
     carto.height = goog.isDef(height) ? height : 0;
   }
 
-  this.cam_.setView({
-    positionCartographic: carto,
+  var destination = Cesium.Ellipsoid.WGS84.cartographicToCartesian(carto);
+
+  /** @type {Cesium.optionsOrientation} */
+  var orientation = {
     pitch: this.tilt_ - Cesium.Math.PI_OVER_TWO,
-    heading: -this.view_.getRotation()
+    heading: -this.view_.getRotation(),
+    roll: undefined
+  };
+  this.cam_.setView({
+    destination: destination,
+    orientation: orientation
   });
 
   this.cam_.moveBackward(this.distance_);
@@ -339,6 +369,7 @@ olcs.Camera.prototype.updateCamera_ = function() {
 
 /**
  * Calculates the values of the properties from the current ol.View state.
+ * @api
  */
 olcs.Camera.prototype.readFromView = function() {
   if (goog.isNull(this.view_) || goog.isNull(this.toLonLat_)) {
@@ -442,10 +473,11 @@ olcs.Camera.prototype.updateView = function() {
  * @param {boolean=} opt_dontSync Do not synchronize the view.
  */
 olcs.Camera.prototype.checkCameraChange = function(opt_dontSync) {
-  var viewMatrix = this.cam_.viewMatrix;
-  if (!this.lastCameraViewMatrix_ ||
-      !this.lastCameraViewMatrix_.equals(viewMatrix)) {
-    this.lastCameraViewMatrix_ = viewMatrix.clone();
+  var old = this.lastCameraViewMatrix_;
+  var current = this.cam_.viewMatrix;
+
+  if (!old || !Cesium.Matrix4.equalsEpsilon(old, current, 1e-5)) {
+    this.lastCameraViewMatrix_ = current.clone();
     if (opt_dontSync !== true) {
       this.updateView();
     }
@@ -454,8 +486,8 @@ olcs.Camera.prototype.checkCameraChange = function(opt_dontSync) {
 
 
 /**
- * @param {number} resolution
- * @param {number} latitude
+ * @param {number} resolution Number of map units per pixel.
+ * @param {number} latitude Latitude in radians.
  * @return {number} The calculated distance.
  * @private
  */
@@ -466,7 +498,7 @@ olcs.Camera.prototype.calcDistanceForResolution_ = function(resolution,
   var metersPerUnit = this.view_.getProjection().getMetersPerUnit();
 
   // number of "map units" visible in 2D (vertically)
-  var visibleMapUnits = resolution * canvas.height;
+  var visibleMapUnits = resolution * canvas.clientHeight;
 
   // The metersPerUnit does not take latitude into account, but it should
   // be lower with increasing latitude -- we have to compensate.
@@ -509,7 +541,7 @@ olcs.Camera.prototype.calcResolutionForDistance_ = function(distance,
   var visibleMeters = 2 * distance * Math.tan(fovy / 2);
   var relativeCircumference = Math.cos(Math.abs(latitude));
   var visibleMapUnits = visibleMeters / metersPerUnit / relativeCircumference;
-  var resolution = visibleMapUnits / canvas.height;
+  var resolution = visibleMapUnits / canvas.clientHeight;
 
   return resolution;
 };

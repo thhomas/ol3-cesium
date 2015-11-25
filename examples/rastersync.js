@@ -12,12 +12,14 @@ var layer1 = new ol.layer.Tile({
     crossOrigin: 'anonymous'
   })
 });
+
+var tileJsonSource = new ol.source.TileJSON({
+  url: 'http://api.tiles.mapbox.com/v3/mapbox.world-borders-light.jsonp',
+  crossOrigin: 'anonymous'
+});
+
 var layer2 = new ol.layer.Tile({
-  source: new ol.source.TileJSON({
-    url: 'http://api.tiles.mapbox.com/v3/' +
-        'mapbox.world-borders-light.jsonp',
-    crossOrigin: 'anonymous'
-  })
+  source: tileJsonSource
 });
 var ol2d = new ol.Map({
   layers: [layer0, new ol.layer.Group({layers: [layer1, layer2]})],
@@ -30,7 +32,7 @@ var ol2d = new ol.Map({
 var ol3d = new olcs.OLCesium({map: ol2d, target: 'map3d'});
 var scene = ol3d.getCesiumScene();
 var terrainProvider = new Cesium.CesiumTerrainProvider({
-    url : '//cesiumjs.org/stk-terrain/tilesets/world/tiles'
+    url : '//assets.agi.com/stk-terrain/world'
 });
 scene.terrainProvider = terrainProvider;
 
@@ -61,12 +63,12 @@ var addStamen = function() {
   }));
 };
 
-var tileWMSSource = new ol.source.TileWMS(/** @type {olx.source.TileWMSOptions} */ ({
+var tileWMSSource = new ol.source.TileWMS({
       url: 'http://demo.boundlessgeo.com/geoserver/wms',
       params: {'LAYERS': 'topp:states', 'TILED': true},
       serverType: 'geoserver',
       crossOrigin: 'anonymous'
-    }));
+    });
 
 var addTileWMS = function() {
   ol2d.addLayer(new ol.layer.Tile({
@@ -84,5 +86,14 @@ var changeTileWMSParams = function() {
 };
 
 var addTileJSON = function() {
-  ol2d.addLayer(layer2);
+  ol2d.addLayer(new ol.layer.Tile({
+    source: tileJsonSource
+  }));
+};
+
+var removeLastLayer = function() {
+  var length = ol2d.getLayers().getLength();
+  if (length >  0) {
+    ol2d.getLayers().removeAt(length - 1);
+  }
 };

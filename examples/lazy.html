@@ -4,14 +4,15 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta name="robots" content="index, all" />
-    <title>ol3cesium EPSG:4326 layer example</title>
+    <title>ol3cesium lazy initialization</title>
     <link rel="stylesheet" href="../ol3/css/ol.css" type="text/css">
   </head>
   <body>
-    <div id="map2d" style="width:600px;height:400px;float:left;"></div>
-    <input type="button" value="Enable/disable" onclick="javascript:ol3d.setEnabled(!ol3d.getEnabled())" />
-    <script src="../cesium/Build/Cesium/Cesium.js"></script>
+    <div>Delay downloading the Cesium script and initializing the 3D globe.</div>
+    <div>This is an experimental feature.</div>
+    <div id="map" style="width:600px;height:400px;"></div>
+    <input type="button" value="Enable/disable 3D" onclick="javascript:toggle3D()" />
     <script src="/@loader"></script>
-    <script src="epsg-4326.js"></script>
+    <script src="lazy.js"></script>
   </body>
 </html>
