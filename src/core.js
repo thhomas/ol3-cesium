@@ -2,7 +2,7 @@ goog.provide('olcs.core');
 
 goog.require('goog.asserts');
 goog.require('goog.async.AnimationDelay');
-goog.require('ol.layer.Tile');
+//goog.require('ol.layer.Tile');
 goog.require('ol.proj');
 goog.require('ol.source.TileImage');
 goog.require('olcs.core.OLImageryProvider');
@@ -382,10 +382,10 @@ olcs.core.tileLayerToImageryLayer = function(olLayer, viewProj) {
     } else {
       return null;
     }
-  } else {
+  } /*else {
     // sources other than TileImage are currently not supported
     return null;
-  }
+  }*/
 
   // the provider is always non-null if we got this far
 
